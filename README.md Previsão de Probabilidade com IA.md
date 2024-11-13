@@ -1,3 +1,10 @@
+# instalacao das bibliotecas 
+!pip  install  --upgrade  pip 
+!pip  install  python-multipart 
+!pip  install  gradio 
+!pip  install sklearn
+!pip install scikit-learn
+
 # Importação das bibliotecas necessárias
 import sqlite3
 import pandas as pd
