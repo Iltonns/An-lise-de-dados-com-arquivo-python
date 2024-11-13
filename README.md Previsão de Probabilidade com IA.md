@@ -1,138 +1,104 @@
-# Importando bibliotecas
+# Importação das bibliotecas necessárias
 import sqlite3
 import pandas as pd
-
-# Passo 1: Abrindo a conexão com o banco de dados e coletando os dados
-con = sqlite3.connect("database.db")
-
-# Consulta SQL para unir tabelas de atividade de voo e histórico de fidelidade
-consulta_atividade = """
-  SELECT
-    *
-  FROM
-    flight_activity fa
-  LEFT JOIN
-    flight_loyalty_history flh ON (fa.loyalty_number = flh.loyalty_number)
-"""
-
-# Executa a consulta e carrega os dados em um DataFrame
-df_atividade = pd.read_sql_query(consulta_atividade, con)
-
-# Visualiza as primeiras linhas do DataFrame resultante
-df_atividade.head()
-
-# Fecha a conexão com o banco de dados
-con.close()
-
-# Verifica o tipo do objeto resultante e exibe as primeiras linhas novamente
-print(type(df_atividade))
-df_atividade.head()
-
-# Seleciona colunas específicas para análise
-colunas = ['loyalty_number', 'year', 'month', 'total_flights']
-df2 = df_atividade.loc[:, colunas]
-df2.head()
-
-# Passo 2: Análise básica do DataFrame
-# Conta o número de linhas e colunas presentes
-print("Total de linhas:", df_atividade.shape[0])
-print("Total de colunas:", df_atividade.shape[1])
-
-# Exibe informações gerais do DataFrame
-df_atividade.info()
-
-# Passo 3: Cálculo de estatísticas específicas
-# Soma total de voos na coluna 'total_flights'
-coluna = 'total_flights'
-print("Soma de voos totais:", df_atividade.loc[:, coluna].sum())
-
-# Calcula a média, mínima e máxima distância percorrida
-coluna = 'distance'
-print("Média de distância:", df_atividade.loc[:, coluna].mean())
-print("Distância mínima:", df_atividade.loc[:, coluna].min())
-print("Distância máxima:", df_atividade.loc[:, coluna].max())
-
-# Verifica colunas com valores nulos e conta o número de nulos
-print("Valores nulos por coluna:")
-print(df_atividade.isna().sum())
-
-# Passo 4: Seleção de colunas e remoção de dados faltantes
-# Seleciona colunas de interesse para o modelo
-colunas = ['year', 'month', 'flights_booked', 'flights_with_companions', 'total_flights', 'distance',
-           'points_accumulated', 'points_redeemed', 'salary', 'clv', 'loyalty_card']
-
-df_colunas_selecionadas = df_atividade.loc[:, colunas]
-
-# Remove linhas com dados faltantes e verifica se há valores nulos
-df_treinamento = df_colunas_selecionadas.dropna()
-print("Valores nulos após remoção:", df_treinamento.isna().sum().sum())
-
-# Exibe o total de linhas restantes após remoção de nulos e as primeiras linhas
-print("Total de linhas após remoção de nulos:", df_treinamento.shape[0])
-df_treinamento.head()
-
-# Passo 5: Treinamento do modelo de árvore de decisão
-from sklearn import tree as tr
-
-# Define as variáveis de entrada (X) e alvo (y)
-x = df_treinamento.drop(columns='loyalty_card')
-y = df_treinamento['loyalty_card']
-
-# Cria e treina o modelo de árvore de decisão
-modelo = tr.DecisionTreeClassifier(max_depth=5)
-modelo_treinado = modelo.fit(x, y)
-
-# Visualiza a árvore de decisão treinada
-tr.plot_tree(modelo_treinado, filled=True)
-
-# Passo 6: Previsão de probabilidade de aquisição de cartões
-# Seleciona uma amostra aleatória para prever a probabilidade de aquisição de cartões
-x_novo = x.sample()
-previsao = modelo_treinado.predict_proba(x_novo)
-
-# Exibe a probabilidade de aquisição para cada tipo de cartão
-print('Probabilidade - Aurora: {:.2f}% - Nova: {:.2f}% - Star: {:.2f}%'.format(
-    100 * previsao[0, 0], 100 * previsao[0, 1], 100 * previsao[0, 2]))
-
-# Passo 7: Criando uma Interface com Gradio
 import gradio as gr
 import numpy as np
+from sklearn import tree as tr
+from matplotlib import pyplot as plt
+%matplotlib inline
 
-# Função de previsão para a interface
-def predict(*args):
-    x_novo = np.array([args]).reshape(1, -1)
-    previsao = modelo_treinado.predict_proba(x_novo)
-    return {'Aurora': previsao[0, 0], 'Nova': previsao[0, 1], 'Star': previsao[0, 2]}
+# Conexão com o banco de dados
+conn = sqlite3.connect('database.db')
 
-# Configurando a interface Gradio
-with gr.Blocks() as demo:
-    gr.Markdown("# Propensão de Compra de Cartões")
+# Consulta para selecionar dados da atividade de voo e histórico de lealdade
+consulta_atividade = """
+SELECT 
+    *
+FROM 
+    flight_activity fa 
+LEFT JOIN 
+    flight_loyalty_history flh 
+ON 
+    (fa.loyalty_number = flh.loyalty_number)
+"""
+df_atividade = pd.read_sql_query(consulta_atividade, conn)
 
-    with gr.Row():
-        gr.Markdown("### Atributos do Cliente")
-        with gr.Column():
-            # Sliders para os atributos do cliente
-            year = gr.Slider(label='Ano', minimum=2017, maximum=2018, step=1, randomize=True)
-            month = gr.Slider(label='Mês', minimum=1, maximum=12, step=1, randomize=True)
-            flights_booked = gr.Slider(label='Voos Reservados', minimum=0, maximum=21, step=1, randomize=True)
-            flights_with_companions = gr.Slider(label='Voos com Acompanhantes', minimum=0, maximum=11, step=1, randomize=True)
-            total_flights = gr.Slider(label='Total de Voos', minimum=0, maximum=32, step=1, randomize=True)
-            distance = gr.Slider(label='Distância Percorrida', minimum=0, maximum=6293, step=1, randomize=True)
-            points_accumulated = gr.Slider(label='Pontos Acumulados', minimum=0.0, maximum=676.5, step=0.1, randomize=True)
-            salary = gr.Slider(label='Salário', minimum=58486.0, maximum=407228.0, step=1, randomize=True)
-            clv = gr.Slider(label='Valor do Cliente (CLV)', minimum=2119.89, maximum=83325.38, step=0.1, randomize=True)
+# Exibir as primeiras linhas para verificar se a consulta foi bem-sucedida
+df_atividade.head()
 
-    # Botão de previsão e exibição do resultado
-    predict_btn = gr.Button(value='Previsão')
-    label = gr.Label("Propensão de Compra do Cliente")
+# Contagem de dados faltantes em cada coluna
+df_atividade.isna().sum()
 
-    # Configuração do clique do botão para realizar a previsão
-    predict_btn.click(
-        fn=predict,
-        inputs=[year, month, flights_booked, flights_with_companions, total_flights,
-                distance, points_accumulated, salary, clv],
-        outputs=[label]
+# Seleciona apenas as colunas numéricas para análise
+colunas = [
+    "year", "month", "flights_booked", "flights_with_companions", 
+    "total_flights", "distance", "points_accumulated", "salary", 
+    "clv", "loyalty_card"
+]
+df_colunas_numericas = df_atividade.loc[:, colunas]
+
+# Remover linhas com dados faltantes
+df_dados_completos = df_colunas_numericas.dropna()
+
+# Verificar se ainda existem dados faltantes
+df_dados_completos.isna().sum()
+
+# Preparação dos dados para o treinamento
+X_atributos = df_dados_completos.drop(columns="loyalty_card")
+y_rotulos = df_dados_completos["loyalty_card"]
+
+# Definição do modelo de Árvore de Decisão
+modelo = tr.DecisionTreeClassifier(max_depth=4)
+
+# Treinamento do modelo
+modelo_treinado = modelo.fit(X_atributos, y_rotulos)
+
+# Exibição da árvore de decisão treinada
+plt.figure(figsize=(20, 10))
+tr.plot_tree(modelo_treinado, filled=True)
+plt.show()
+
+# Previsão de lealdade para um novo cliente (exemplo)
+X_novo = X_atributos.sample()  # Seleciona uma amostra dos atributos
+previsao = modelo_treinado.predict_proba(X_novo)
+print(
+    "Probabilidade - Aurora: {:.1f}% - Nova: {:.1f}% - Star: {:.1f}%".format(
+        100 * previsao[0][0], 
+        100 * previsao[0][1], 
+        100 * previsao[0][2]
     )
+)
 
-# Lança a aplicação com o Gradio
-demo.launch(debug=True, share=False)
+# Função para prever a lealdade do cliente com base nos atributos
+def predict(*args):
+    X_novo = np.array([args]).reshape(1, -1)
+    previsao = modelo_treinado.predict_proba(X_novo)
+    return {
+        "Aurora": previsao[0][0], 
+        "Nova": previsao[0][1], 
+        "Star": previsao[0][2]
+    }
+
+# Interface gráfica com Gradio para entrada de dados e previsão
+demo = gr.Interface(
+    title="Projeto 01: Imersão na área de Dados",
+    description="**Inteligência Artificial para calcular a propensão de compra de clientes**"
+                "\n\n*Utilize os sliders para ajustar os valores de entrada.*",
+    fn=predict,
+    inputs=[
+        gr.Radio([2017, 2018], label="year"),
+        gr.Slider(label="month", minimum=1, maximum=12, step=1, randomize=True),
+        gr.Slider(label="flights_booked", minimum=0, maximum=21, step=1, randomize=True),
+        gr.Slider(label="flights_with_companions", minimum=0, maximum=11, step=1, randomize=True),
+        gr.Slider(label="total_flights", minimum=0, maximum=32, step=1, randomize=True),
+        gr.Slider(label="distance", minimum=0, maximum=6293, step=1, randomize=True),
+        gr.Slider(label="points_accumulated", minimum=0.00, maximum=676.50, step=0.1, randomize=True),
+        gr.Slider(label="salary", minimum=-58486.00, maximum=407228.00, step=0.1, randomize=True),
+        gr.Slider(label="clv", minimum=2119.89, maximum=83325.38, step=0.1, randomize=True)
+    ],
+    outputs=gr.Label(label='Previsão'),
+    allow_flagging="never"
+)
+
+# Lançamento do painel de interface para previsão online
+demo.launch(share=True)
