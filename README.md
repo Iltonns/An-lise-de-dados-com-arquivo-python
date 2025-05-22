@@ -1,33 +1,18 @@
-# Este projeto tem como objetivo analisar e gerenciar a distribuição de uniformes para servidores, com base em uma planilha de dados em Excel. A análise é realizada utilizando a biblioteca Pandas para manipulação dos dados, Matplotlib e Seaborn para visualizações gráficas. O código segue os seguintes passos principais:
+# Problema
 
-# Carregamento dos Dados:
-A base de dados é carregada a partir de um arquivo Excel (Uniformes.xlsx), contendo informações sobre os servidores e os itens de uniforme recebidos.
+A distribuição de uniformes para servidores apresentava dificuldades em identificar pendências e organizar a entrega, dificultando a gestão eficiente dos recursos.
 
-# Filtragem de Dados:
+# O que foi feito
 
-Servidores com todos os itens recebidos: Filtra os servidores que receberam todos os itens de uniforme (marcados como "RECEBIDO").
+Foi desenvolvido um sistema automatizado para analisar, filtrar e visualizar o status da distribuição de uniformes, identificando servidores com pendências e exportando relatórios detalhados.
 
-Servidores com pendências: Identifica servidores que têm pelo menos um item marcado como "NÃO RECEBIDO" ou "PARCIAL".
+# Ferramentas usadas
 
-Listagem de itens faltantes: Cria uma coluna adicional que lista os itens que estão pendentes para cada servidor.
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?logo=pandas&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-Visualization-11557c?logo=matplotlib&logoColor=white)
+![Seaborn](https://img.shields.io/badge/Seaborn-Statistical%20Graphics-16a085?logo=seaborn&logoColor=white)
+![Excel](https://img.shields.io/badge/Excel-Data%20Storage-217346?logo=microsoft-excel&logoColor=white)
 
-# Exportação dos Resultados:
-Os resultados são exportados para um arquivo Excel com duas abas: uma para servidores sem pendências e outra para servidores com pendências.
+# Qual foi o resultado
 
-# Visualização Gráfica:
-Um gráfico de barras empilhadas é gerado para visualizar o status de distribuição de cada item de uniforme (RECEBIDO, NÃO RECEBIDO, PARCIAL), permitindo uma análise rápida e intuitiva.
-
-# Conclusão:
-O projeto permite identificar falhas na distribuição de uniformes, listar servidores com pendências e gerar insights para melhorar o processo de entrega. Além disso, os resultados são organizados e exportados de forma clara para facilitar a tomada de decisões.
-
-# Objetivo Principal:
-Automatizar a análise da distribuição de uniformes, identificar pendências e fornecer relatórios e visualizações que auxiliem na gestão eficiente dos recursos.
-
-# Tecnologias Utilizadas:
-Pandas: Para manipulação e análise de dados.
-
-# Matplotlib/Seaborn: Para criação de gráficos e visualizações.
-
-Excel: Para armazenamento dos dados de entrada e exportação dos resultados.
-
-# Este projeto é uma solução eficiente para gestão de inventário e distribuição de recursos, com foco em clareza, organização e tomada de decisão baseada em dados.
+O projeto permitiu identificar rapidamente falhas na distribuição, listar servidores com pendências e gerar relatórios e gráficos claros, facilitando a tomada de decisões e otimizando a gestão de uniformes.
