@@ -57,7 +57,6 @@ Dashboard de Controle
 <div align="center" style="margin-top: 20px;"> <img src="https://img.shields.io/badge/Status-Em%20Produção-brightgreen" alt="Status"/> <img src="https://img.shields.io/badge/Cobertura-100%25%20Servidores-blue" alt="Cobertura"/> <img src="https://img.shields.io/badge/Versão-2.1-orange" alt="Versão"/> </div>
 
 # 📥 Acesso ao Sistema
-Disponível através de:
 
 Aplicativo Desktop
 
